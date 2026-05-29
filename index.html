@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f7f2ea" />
     <meta name="robots" content="noindex,nofollow" />
-    <title>小宝同护</title>
+    <title>育儿同舟</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -13,7 +13,7 @@
     <div class="password-gate" id="passwordGate">
       <form class="password-card" id="passwordForm">
         <p class="eyebrow">Private Demo</p>
-        <h1>小宝同护</h1>
+        <h1>育儿同舟</h1>
         <p>这是内部体验版本，请输入访问密码。</p>
         <input id="demoPassword" type="password" autocomplete="current-password" placeholder="访问密码" />
         <button class="primary" type="submit">进入 Demo</button>
@@ -25,7 +25,7 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">Baby Co-care</p>
-          <h1>小宝同护</h1>
+          <h1>育儿同舟</h1>
         </div>
         <button class="icon-button" id="resetDemo" aria-label="重置示例数据" title="重置示例数据">
           <span aria-hidden="true">↻</span>
@@ -78,12 +78,9 @@
           <div class="vaccine-strip" id="vaccineStrip"></div>
         </section>
 
-        <div class="section-title">
-          <div>
-            <p class="eyebrow">2026-05-29</p>
-            <h2>今日照护简报</h2>
-          </div>
-          <button class="primary small" id="generatePlan">刷新计划</button>
+        <div class="section-title brief-title">
+          <h2>今日照护简报</h2>
+          <span class="brief-date">2026-05-29</span>
         </div>
 
         <div class="notice">
@@ -140,7 +137,7 @@
         <form class="media-form" id="mediaForm">
           <label>
             照片/视频
-            <input id="mediaInput" type="file" accept="image/*,video/*" />
+            <input id="mediaInput" type="file" accept="image/*,video/*" multiple />
           </label>
           <label>
             说明
@@ -208,10 +205,9 @@
             <p class="eyebrow">Report time</p>
             <h3 id="reportTimeTitle">日报生成时间</h3>
           </div>
-          <form class="report-time-form" id="reminderForm">
-            <input id="eveningReminder" type="time" />
-            <button class="ghost small" type="submit">保存</button>
-          </form>
+          <button class="time-chip" id="openReportTime" type="button">
+            <span id="reportTimeText">20:30</span>
+          </button>
         </section>
 
         <article class="report-card" id="reportCard"></article>
@@ -299,6 +295,16 @@
     </div>
 
     <div class="toast hidden" id="toast" role="status"></div>
+    <div class="time-popover hidden" id="reportTimePopover">
+      <form class="time-popover-card" id="reminderForm">
+        <h3>日报生成时间</h3>
+        <input id="eveningReminder" type="time" />
+        <div class="button-row">
+          <button class="primary small" type="submit">保存</button>
+          <button class="ghost small" id="closeReportTime" type="button">取消</button>
+        </div>
+      </form>
+    </div>
 
     <script src="./app.js"></script>
   </body>

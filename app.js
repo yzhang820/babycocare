@@ -8,6 +8,11 @@ function localDateString(date = new Date()) {
 }
 
 const TODAY = localDateString();
+function offsetDate(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return localDateString(date);
+}
 
 const provinceCities = {
   北京: ["北京"],
@@ -48,6 +53,75 @@ const growthReference = {
   4: { weight: [5.6, 8.6], height: [59.0, 68.5], skills: "常见能力包括更稳地抬头、看向声音、主动看照护人、尝试抓握、咿呀发声。" },
   5: { weight: [6.0, 9.2], height: [61.0, 70.5], skills: "常见能力包括翻身预备、双手抓物、更多咿呀互动、对熟悉照护人有明显反应。" },
   6: { weight: [6.4, 9.8], height: [63.0, 72.5], skills: "常见能力包括翻身、扶坐预备、把物品送到嘴边探索，部分宝宝开始添加辅食。" }
+};
+
+// WHO Child Growth Standards core demo reference, 0-12 months.
+// p3/p50/p97 are embedded as lightweight chart guides only; production should load official LMS tables.
+const whoGrowthPercentiles = {
+  female: {
+    weight: [
+      { m: 0, p3: 2.4, p50: 3.2, p97: 4.2 },
+      { m: 1, p3: 3.2, p50: 4.2, p97: 5.5 },
+      { m: 2, p3: 4.0, p50: 5.1, p97: 6.6 },
+      { m: 3, p3: 4.6, p50: 5.8, p97: 7.5 },
+      { m: 4, p3: 5.1, p50: 6.4, p97: 8.2 },
+      { m: 5, p3: 5.5, p50: 6.9, p97: 8.8 },
+      { m: 6, p3: 5.8, p50: 7.3, p97: 9.3 },
+      { m: 7, p3: 6.1, p50: 7.6, p97: 9.8 },
+      { m: 8, p3: 6.3, p50: 7.9, p97: 10.2 },
+      { m: 9, p3: 6.6, p50: 8.2, p97: 10.5 },
+      { m: 10, p3: 6.8, p50: 8.5, p97: 10.9 },
+      { m: 11, p3: 7.0, p50: 8.7, p97: 11.2 },
+      { m: 12, p3: 7.1, p50: 8.9, p97: 11.5 }
+    ],
+    height: [
+      { m: 0, p3: 45.6, p50: 49.1, p97: 52.7 },
+      { m: 1, p3: 50.0, p50: 53.7, p97: 57.4 },
+      { m: 2, p3: 53.2, p50: 57.1, p97: 61.1 },
+      { m: 3, p3: 55.8, p50: 59.8, p97: 64.0 },
+      { m: 4, p3: 58.0, p50: 62.1, p97: 66.4 },
+      { m: 5, p3: 59.9, p50: 64.0, p97: 68.5 },
+      { m: 6, p3: 61.5, p50: 65.7, p97: 70.3 },
+      { m: 7, p3: 62.9, p50: 67.3, p97: 71.9 },
+      { m: 8, p3: 64.3, p50: 68.7, p97: 73.5 },
+      { m: 9, p3: 65.6, p50: 70.1, p97: 75.0 },
+      { m: 10, p3: 66.8, p50: 71.5, p97: 76.4 },
+      { m: 11, p3: 68.0, p50: 72.8, p97: 77.8 },
+      { m: 12, p3: 69.2, p50: 74.0, p97: 79.2 }
+    ]
+  },
+  male: {
+    weight: [
+      { m: 0, p3: 2.5, p50: 3.3, p97: 4.4 },
+      { m: 1, p3: 3.4, p50: 4.5, p97: 5.8 },
+      { m: 2, p3: 4.3, p50: 5.6, p97: 7.1 },
+      { m: 3, p3: 5.0, p50: 6.4, p97: 8.0 },
+      { m: 4, p3: 5.6, p50: 7.0, p97: 8.7 },
+      { m: 5, p3: 6.0, p50: 7.5, p97: 9.3 },
+      { m: 6, p3: 6.4, p50: 7.9, p97: 9.8 },
+      { m: 7, p3: 6.7, p50: 8.3, p97: 10.3 },
+      { m: 8, p3: 6.9, p50: 8.6, p97: 10.7 },
+      { m: 9, p3: 7.1, p50: 8.9, p97: 11.0 },
+      { m: 10, p3: 7.4, p50: 9.2, p97: 11.4 },
+      { m: 11, p3: 7.6, p50: 9.4, p97: 11.7 },
+      { m: 12, p3: 7.7, p50: 9.6, p97: 12.0 }
+    ],
+    height: [
+      { m: 0, p3: 46.1, p50: 49.9, p97: 53.7 },
+      { m: 1, p3: 50.8, p50: 54.7, p97: 58.6 },
+      { m: 2, p3: 54.4, p50: 58.4, p97: 62.4 },
+      { m: 3, p3: 57.3, p50: 61.4, p97: 65.5 },
+      { m: 4, p3: 59.7, p50: 63.9, p97: 68.0 },
+      { m: 5, p3: 61.7, p50: 65.9, p97: 70.1 },
+      { m: 6, p3: 63.3, p50: 67.6, p97: 71.9 },
+      { m: 7, p3: 64.8, p50: 69.2, p97: 73.5 },
+      { m: 8, p3: 66.2, p50: 70.6, p97: 75.0 },
+      { m: 9, p3: 67.5, p50: 72.0, p97: 76.5 },
+      { m: 10, p3: 68.7, p50: 73.3, p97: 77.9 },
+      { m: 11, p3: 69.9, p50: 74.5, p97: 79.2 },
+      { m: 12, p3: 71.0, p50: 75.7, p97: 80.5 }
+    ]
+  }
 };
 
 const iconMap = {
@@ -483,8 +557,7 @@ function renderCareList() {
                         <input data-actual="${taskItem.id}" type="number" step="1" value="${taskItem.actual || taskItem.target}" />
                         <button type="button" data-step="${taskItem.id}" data-delta="${taskItem.unit === "ml" ? 10 : 5}">+</button>
                         <span>${taskItem.unit}</span>
-                      </div>
-                      <input class="range-input" data-range="${taskItem.id}" type="range" min="0" max="${Math.max(taskItem.target * 2, 10)}" step="1" value="${taskItem.actual || taskItem.target}" />`
+                      </div>`
                     : ""
                 }
                 <input data-note="${taskItem.id}" type="text" value="${taskItem.note || ""}" placeholder="备注特殊情况" />
@@ -573,6 +646,14 @@ function drawGrowthChart() {
   const width = canvas.width;
   const height = canvas.height;
   const pad = 32;
+  const gender = state.baby.gender === "male" ? "male" : "female";
+  const reference = whoGrowthPercentiles[gender];
+  const plottedGrowth = state.growth.map((row) => ({ ...row, age: ageInMonths(row.date) }));
+  const maxAge = Math.max(6, Math.ceil(Math.max(...plottedGrowth.map((row) => row.age), babyAgeMonths()) + 1));
+  const visibleReference = {
+    weight: reference.weight.filter((row) => row.m <= maxAge),
+    height: reference.height.filter((row) => row.m <= maxAge)
+  };
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#fffdf9";
   ctx.fillRect(0, 0, width, height);
@@ -586,18 +667,57 @@ function drawGrowthChart() {
     ctx.stroke();
   }
 
-  const weights = state.growth.map((item) => item.weight);
-  const heights = state.growth.map((item) => item.height);
-  drawLine("weight", Math.min(...weights) - 0.4, Math.max(...weights) + 0.4, "#e86d5a", "体重 kg");
-  drawLine("height", Math.min(...heights) - 2, Math.max(...heights) + 2, "#2e8179", "身高 cm");
+  const weights = [...plottedGrowth.map((item) => item.weight), ...visibleReference.weight.flatMap((item) => [item.p3, item.p97])];
+  const heights = [...plottedGrowth.map((item) => item.height), ...visibleReference.height.flatMap((item) => [item.p3, item.p97])];
+  const weightScale = [Math.min(...weights) - 0.4, Math.max(...weights) + 0.4];
+  const heightScale = [Math.min(...heights) - 2, Math.max(...heights) + 2];
+  drawPercentileBand(visibleReference.weight, weightScale[0], weightScale[1], "rgba(232, 109, 90, 0.08)", "rgba(232, 109, 90, 0.28)");
+  drawPercentileBand(visibleReference.height, heightScale[0], heightScale[1], "rgba(46, 129, 121, 0.07)", "rgba(46, 129, 121, 0.24)");
+  drawLine("weight", weightScale[0], weightScale[1], "#e86d5a", "体重 kg");
+  drawLine("height", heightScale[0], heightScale[1], "#2e8179", "身高 cm");
 
-  function xAt(index) {
-    if (state.growth.length === 1) return width / 2;
-    return pad + (index / (state.growth.length - 1)) * (width - pad * 2);
+  function ageInMonths(date) {
+    const start = new Date(`${state.baby.birthDate}T00:00:00`);
+    const end = new Date(`${date}T00:00:00`);
+    return Math.max(0, (end - start) / 86400000 / 30.4375);
+  }
+
+  function xAtAge(age) {
+    return pad + (age / maxAge) * (width - pad * 2);
   }
 
   function yAt(value, min, max) {
     return height - pad - ((value - min) / (max - min || 1)) * (height - pad * 2);
+  }
+
+  function drawPercentileBand(rows, min, max, fill, stroke) {
+    if (!rows.length) return;
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    rows.forEach((row, index) => {
+      const x = xAtAge(row.m);
+      const y = yAt(row.p97, min, max);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    [...rows].reverse().forEach((row) => ctx.lineTo(xAtAge(row.m), yAt(row.p3, min, max)));
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ["p3", "p50", "p97"].forEach((key) => {
+      ctx.beginPath();
+      rows.forEach((row, index) => {
+        const x = xAtAge(row.m);
+        const y = yAt(row[key], min, max);
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
   }
 
   function drawLine(key, min, max, color, label) {
@@ -605,16 +725,16 @@ function drawGrowthChart() {
     ctx.fillStyle = color;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    state.growth.forEach((row, index) => {
-      const x = xAt(index);
+    plottedGrowth.forEach((row, index) => {
+      const x = xAtAge(row.age);
       const y = yAt(row[key], min, max);
       if (index === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
-    state.growth.forEach((row, index) => {
+    plottedGrowth.forEach((row) => {
       ctx.beginPath();
-      ctx.arc(xAt(index), yAt(row[key], min, max), 4, 0, Math.PI * 2);
+      ctx.arc(xAtAge(row.age), yAt(row[key], min, max), 4, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
@@ -663,14 +783,18 @@ function buildTimelineEvents() {
       detail: `${taskItem.actual || taskItem.target}${taskItem.unit}${taskItem.note ? ` · ${taskItem.note}` : ""}`,
       kind: "done"
     }));
-  const mediaEvents = state.media.map((item) => ({
+  const mediaEvents = sortedMedia().map((item) => ({
     time: item.time,
     title: "照片/视频",
     detail: `${item.note || "已添加媒体记录"}${item.fileName ? ` · ${item.fileName}` : ""}`,
     kind: "media",
     thumb: item.thumb || ""
   }));
-  return [...taskEvents, ...mediaEvents].sort((a, b) => a.time.localeCompare(b.time));
+  return [...taskEvents, ...mediaEvents].sort((a, b) => String(a.time).localeCompare(String(b.time)));
+}
+
+function sortedMedia() {
+  return [...state.media].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 }
 
 function renderTimeline() {
@@ -686,13 +810,12 @@ function renderMediaGrid() {
   const count = document.querySelector("#mediaCount");
   count.textContent = `${state.media.length} 条`;
   grid.innerHTML = state.media.length
-    ? state.media
-        .slice()
-        .reverse()
+    ? sortedMedia()
+        .slice(0, 80)
         .map(
           (item) => `
             <article class="media-card">
-              ${item.thumb ? `<img src="${item.thumb}" alt="${item.note || "照片记录"}" />` : `<div class="media-placeholder">视频</div>`}
+              ${item.thumb ? `<img src="${item.thumb}" alt="${item.note || "照片记录"}" loading="lazy" decoding="async" />` : `<div class="media-placeholder">视频</div>`}
               <div>
                 <strong>${item.time}</strong>
                 <p>${item.note || item.fileName || "成长片段"}</p>
@@ -705,7 +828,11 @@ function renderMediaGrid() {
 }
 
 function renderHistory() {
-  const reports = [...state.reports].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const mockReports = [
+    { id: "mock-report-1", date: offsetDate(-1), createdAt: `${offsetDate(-1)}T20:30:00.000Z`, title: `${state.baby.name} 昨日简报`, summary: "喂养节奏稳定，完成睡眠与互动记录。", timeline: [] },
+    { id: "mock-report-2", date: offsetDate(-2), createdAt: `${offsetDate(-2)}T20:30:00.000Z`, title: `${state.baby.name} 前日简报`, summary: "完成疫苗提醒核对，外出准备记录完整。", timeline: [] }
+  ];
+  const reports = (state.reports.length ? [...state.reports] : mockReports).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   document.querySelector("#historyCount").textContent = `${reports.length} 份`;
   document.querySelector("#historyList").innerHTML = reports.length
     ? reports
@@ -728,7 +855,7 @@ function renderHistory() {
           }
         )
         .join("")
-    : `<article class="history-card"><strong>还没有历史报告</strong><p>到达日报生成时间后，每天会自动保存一份历史日报。</p></article>`;
+    : "";
 }
 
 function reportSummaryText() {
@@ -773,12 +900,11 @@ function buildReportHtml() {
 
 function renderReport() {
   const reportTime = state.reminders.reportTime || "20:30";
-  document.querySelector("#reportTimeTitle").textContent = `日报生成时间 · ${reportTime}`;
+  document.querySelector("#reportTimeTitle").textContent = "日报生成时间";
+  document.querySelector("#reportTimeText").textContent = reportTime;
   document.querySelector("#eveningReminder").value = reportTime;
-  const report = ensureDailyReport();
-  document.querySelector("#reportCard").innerHTML = report
-    ? `<p class="report-stamp">${report.date} · ${report.createdAt.slice(11, 16)}</p>${report.html}`
-    : `<h3>日报还未生成</h3><p>今天的日报会在 ${reportTime} 后生成。到时间后进入本页即可查看，并且每天只保存一份历史日报。</p>`;
+  const report = ensureDailyReport() || state.reports.find((item) => item.date === TODAY) || { date: TODAY, createdAt: `${TODAY}T${reportTime}:00.000Z`, html: buildReportHtml() };
+  document.querySelector("#reportCard").innerHTML = `<p class="report-stamp">${report.date} · ${report.createdAt.slice(11, 16)}</p>${report.html}`;
   renderHistory();
 }
 
@@ -899,19 +1025,6 @@ document.querySelector("#profileFeeding").addEventListener("change", (event) => 
       : `按最近一次成长记录 ${latestGrowth().weight.toFixed(2)}kg 估算：约 ${target}ml/日。出生体重用于成长曲线起点，实际喂养以儿保医生建议和宝宝状态为准。`;
 });
 
-document.addEventListener("input", (event) => {
-  const range = event.target.closest("[data-range]");
-  const actual = event.target.closest("[data-actual]");
-  if (range) {
-    const input = document.querySelector(`[data-actual="${range.dataset.range}"]`);
-    if (input) input.value = range.value;
-  }
-  if (actual) {
-    const slider = document.querySelector(`[data-range="${actual.dataset.actual}"]`);
-    if (slider) slider.value = actual.value;
-  }
-});
-
 document.addEventListener("click", (event) => {
   const step = event.target.closest("[data-step]");
   const save = event.target.closest("[data-save-task]");
@@ -919,10 +1032,8 @@ document.addEventListener("click", (event) => {
 
   if (step) {
     const input = document.querySelector(`[data-actual="${step.dataset.step}"]`);
-    const slider = document.querySelector(`[data-range="${step.dataset.step}"]`);
     const next = Math.max(0, Number(input.value || 0) + Number(step.dataset.delta || 0));
     input.value = next;
-    if (slider) slider.value = next;
   }
 
   if (save) {
@@ -950,13 +1061,27 @@ document.addEventListener("click", (event) => {
 
 document.querySelector("#mediaForm").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const file = document.querySelector("#mediaInput").files[0];
+  const files = [...document.querySelector("#mediaInput").files];
   const note = document.querySelector("#mediaNote").value.trim();
   const time = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
-  if (!file && !note) return;
+  if (!files.length && !note) return;
   try {
-    const thumb = file ? await fileToDataUrl(file, 900, 0.72) : "";
-    state.media.push({ id: `media-${Date.now()}`, time, fileName: file ? file.name : "", note, thumb, kind: file?.type.startsWith("video/") ? "video" : "image" });
+    const createdAt = Date.now();
+    const items = await Promise.all(
+      (files.length ? files : [null]).map(async (file, index) => {
+        const thumb = file ? await fileToDataUrl(file, 900, 0.72) : "";
+        return {
+          id: `media-${createdAt}-${index}`,
+          createdAt: createdAt + index,
+          time,
+          fileName: file ? file.name : "",
+          note,
+          thumb,
+          kind: file?.type.startsWith("video/") ? "video" : "image"
+        };
+      })
+    );
+    state.media.push(...items);
     event.target.reset();
     saveState();
     renderAll();
@@ -1032,21 +1157,19 @@ document.querySelector("#reminderForm").addEventListener("submit", (event) => {
   event.preventDefault();
   state.reminders.reportTime = document.querySelector("#eveningReminder").value || state.reminders.reportTime;
   state.reports = state.reports.filter((report) => report.date !== TODAY);
+  document.querySelector("#reportTimePopover").classList.add("hidden");
   saveState();
   showToast("日报生成时间已保存");
   renderReport();
 });
 
-document.querySelector("#generatePlan").addEventListener("click", () => {
-  const milkTasks = state.tasks.filter((taskItem) => taskItem.category === "feeding" && taskItem.unit === "ml");
-  const perFeed = state.baby.targetMilk ? Math.round(state.baby.targetMilk / milkTasks.length / 10) * 10 : 0;
-  milkTasks.forEach((taskItem) => {
-    taskItem.target = perFeed;
-    if (taskItem.status !== "done") taskItem.actual = perFeed;
-  });
-  showToast("今日计划已按档案刷新");
-  saveState();
-  renderAll();
+document.querySelector("#openReportTime").addEventListener("click", () => {
+  document.querySelector("#eveningReminder").value = state.reminders.reportTime || "20:30";
+  document.querySelector("#reportTimePopover").classList.remove("hidden");
+});
+
+document.querySelector("#closeReportTime").addEventListener("click", () => {
+  document.querySelector("#reportTimePopover").classList.add("hidden");
 });
 
 document.querySelector("#addDemoRecord").addEventListener("click", () => {

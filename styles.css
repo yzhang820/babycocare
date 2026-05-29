@@ -477,6 +477,21 @@ h3 {
   margin-bottom: 0;
 }
 
+.brief-title {
+  align-items: baseline;
+}
+
+.brief-title h2 {
+  margin-bottom: 0;
+}
+
+.brief-date {
+  flex: 0 0 auto;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .task-columns {
   display: grid;
   gap: 18px;
@@ -711,28 +726,34 @@ h3 {
 
 .stepper {
   display: grid;
-  grid-template-columns: 40px 1fr 40px auto;
-  gap: 8px;
+  grid-template-columns: 48px minmax(84px, 1fr) 48px auto;
+  gap: 10px;
   align-items: center;
+  justify-content: center;
+  width: min(100%, 320px);
+  margin: 0 auto;
 }
 
 .stepper button {
-  min-height: 40px;
+  min-height: 48px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #d1fae5;
   color: #047857;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 900;
+}
+
+.stepper input {
+  min-height: 48px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 850;
 }
 
 .inline-editor input {
   border: 0;
   background: white;
-}
-
-.range-input {
-  accent-color: #10b981;
 }
 
 .check-button,
@@ -946,29 +967,25 @@ select {
 }
 
 .media-grid {
-  display: grid;
-  gap: 10px;
+  column-count: 2;
+  column-gap: 10px;
 }
 
 .media-card {
-  display: grid;
-  grid-template-columns: 82px 1fr;
-  gap: 12px;
-  align-items: center;
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  margin: 0 0 10px;
   padding: 10px;
   border-radius: 20px;
   background: white;
   box-shadow: var(--shadow);
 }
 
-.media-card.empty {
-  grid-template-columns: 1fr;
-}
-
 .media-card img,
 .media-placeholder {
-  width: 82px;
-  height: 82px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 16px;
   object-fit: cover;
   background: #ecfdf5;
@@ -986,6 +1003,12 @@ select {
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.45;
+}
+
+@media (min-width: 480px) {
+  .media-grid {
+    column-count: 3;
+  }
 }
 
 .report-time-card {
@@ -1012,6 +1035,37 @@ select {
 
 .report-time-form input {
   width: 112px;
+}
+
+.time-chip {
+  min-width: 84px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: var(--teal);
+  font-weight: 900;
+}
+
+.time-popover {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.time-popover-card {
+  display: grid;
+  gap: 12px;
+  width: min(320px, 100%);
+  padding: 18px;
+  border-radius: 22px;
+  background: white;
+  box-shadow: var(--shadow);
+  animation: fadeScale 220ms ease-in-out;
 }
 
 .report-stamp {
