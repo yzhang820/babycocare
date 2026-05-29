@@ -1,6 +1,13 @@
 const APP_KEY = "baoCoCareStateV5";
 const OLD_KEYS = ["baoCoCareStateV4", "baoCoCareStateV3", "baoCoCareStateV2", "superMommyState"];
-const TODAY = "2026-05-29";
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const TODAY = localDateString();
 
 const provinceCities = {
   北京: ["北京"],
@@ -57,13 +64,13 @@ const iconMap = {
 };
 
 const vaccineSchedule = [
-  { month: 4, title: "脊灰疫苗第3剂", type: "国家建议必打", due: "2026-05-18", note: "按国家免疫规划，需结合当地接种门诊安排。" },
-  { month: 4, title: "百白破疫苗第2剂", type: "国家建议必打", due: "2026-05-18", note: "如延期，应尽快咨询社区接种门诊补种。" },
-  { month: 4, title: "13价肺炎球菌结合疫苗", type: "可选自费", due: "2026-05-18", note: "自费疫苗，按说明书和医生建议安排剂次。" },
-  { month: 5, title: "五联/四联替代方案核对", type: "可选自费", due: "2026-06-18", note: "如选择联合疫苗，需要和门诊确认与免费疫苗的替代关系。" },
-  { month: 6, title: "乙肝疫苗第3剂", type: "国家建议必打", due: "2026-07-18", note: "通常在6月龄附近接种，避免错过。" },
-  { month: 6, title: "A群流脑多糖疫苗第1剂", type: "国家建议必打", due: "2026-07-18", note: "按当地免疫规划预约。" },
-  { month: 6, title: "流感疫苗", type: "可选自费", due: "2026-07-18", note: "满6月龄后可咨询医生是否接种，通常需结合季节。" }
+  { month: 4, title: "脊灰疫苗第3剂", type: "免费", limit: "4月龄前后" },
+  { month: 4, title: "百白破疫苗第2剂", type: "免费", limit: "4月龄前后" },
+  { month: 4, title: "13价肺炎球菌结合疫苗", type: "自费", limit: "6月龄前完成基础剂次" },
+  { month: 5, title: "五联/四联联合疫苗", type: "自费", limit: "按已选方案连续接种" },
+  { month: 6, title: "乙肝疫苗第3剂", type: "免费", limit: "6月龄前后" },
+  { month: 6, title: "A群流脑多糖疫苗第1剂", type: "免费", limit: "6月龄前后" },
+  { month: 6, title: "流感疫苗", type: "自费", limit: "满6月龄后" }
 ];
 
 const seedState = {
@@ -81,8 +88,7 @@ const seedState = {
     profileCompleted: false
   },
   reminders: {
-    morning: "08:00",
-    evening: "20:30"
+    reportTime: "20:30"
   },
   tasks: [
     task("wake-check", "07:10", true, "晨间状态检查", "观察精神、体温触感、尿布重量和皮肤状态。", 1, "次", "health", "done", 1, "精神好，尿布正常。"),
@@ -159,10 +165,15 @@ function normalizeState(raw) {
     next.baby.birthWeightGrams = Math.round(Number(next.baby.birthWeight || 3.2) * 1000);
   }
   if (!("avatarDataUrl" in next.baby)) next.baby.avatarDataUrl = "";
+  if (next.baby.avatarDataUrl && next.baby.avatarDataUrl.length > 700000) next.baby.avatarDataUrl = "";
   if (!("gender" in next.baby)) next.baby.gender = "unknown";
   if (!("profileCompleted" in next.baby)) next.baby.profileCompleted = false;
+  if (!next.reminders.reportTime) next.reminders.reportTime = next.reminders.evening || "20:30";
   if (!provinceCities[next.baby.province]) next.baby.province = "上海";
   if (!provinceCities[next.baby.province].includes(next.baby.city)) next.baby.city = provinceCities[next.baby.province][0];
+  next.tasks = next.tasks.map((taskItem) => (taskItem.status === "missed" ? { ...taskItem, status: "todo", note: "", completedAt: "" } : taskItem));
+  next.media = next.media.map((item) => ({ ...item, thumb: item.thumb && item.thumb.length < 900000 ? item.thumb : "" }));
+  next.reports = dedupeReports(next.reports);
   next.growth = syncBirthGrowth(next);
   next.baby.targetMilk = calculateTargetMilk(next.baby, next.growth);
   return next;
@@ -170,6 +181,16 @@ function normalizeState(raw) {
 
 function saveState() {
   localStorage.setItem(APP_KEY, JSON.stringify(state));
+}
+
+function dedupeReports(reports) {
+  const byDate = new Map();
+  [...reports]
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
+    .forEach((report) => {
+      if (report.date && !byDate.has(report.date)) byDate.set(report.date, report);
+    });
+  return [...byDate.values()].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
 function latestGrowth() {
@@ -243,12 +264,30 @@ function upcomingVaccines() {
   const age = babyAgeMonths();
   return vaccineSchedule
     .filter((item) => item.month >= age && item.month <= age + 2)
-    .slice(0, 4);
+    .slice(0, 3);
+}
+
+function nowMinutes() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function minutesFromTime(time) {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function reportIsDue() {
+  return nowMinutes() >= minutesFromTime(state.reminders.reportTime || "20:30");
 }
 
 function selectScreen(id) {
   screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === id));
+  if (id === "report") {
+    renderReport();
+    renderTimeline();
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -271,6 +310,32 @@ function maybePromptProfile() {
 function unlockDemo() {
   document.querySelector("#passwordGate")?.classList.add("hidden");
   sessionStorage.setItem("baoDemoUnlocked", "true");
+}
+
+function fileToDataUrl(file, maxSize = 720, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      resolve("");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = reject;
+      image.onload = () => {
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function checkDemoPassword(password) {
@@ -338,7 +403,7 @@ function renderSummary() {
     <strong>${lucideIcon("calendar")} 近期疫苗预约</strong>
     <div class="vaccine-list">
       ${upcomingVaccines()
-        .map((item) => `<article><span class="${item.type.includes("必打") ? "must" : "optional"}">${item.type}</span><b>${item.title}</b><small>${item.due} · ${item.note}</small></article>`)
+        .map((item) => `<article><span class="${item.type === "免费" ? "must" : "optional"}">${item.type}</span><b>${item.title}</b><small>${item.limit}</small></article>`)
         .join("")}
     </div>
   `;
@@ -376,16 +441,28 @@ function visibleTasks() {
   });
 }
 
+function taskNeedsNumber(taskItem) {
+  return taskItem.unit !== "次";
+}
+
+function clearTask(taskItem) {
+  taskItem.status = "todo";
+  taskItem.actual = taskItem.target;
+  taskItem.note = "";
+  taskItem.completedAt = "";
+}
+
 function renderCareList() {
   careList.innerHTML = visibleTasks()
     .sort((a, b) => a.time.localeCompare(b.time))
     .map((taskItem) => {
       const stateClass = taskItem.status === "done" ? "done" : taskItem.status === "missed" ? "missed" : "";
-      const value = taskItem.status === "done" ? `${taskItem.actual}${taskItem.unit}` : `目标 ${taskItem.target}${taskItem.unit}`;
+      const needsNumber = taskNeedsNumber(taskItem);
+      const value = taskItem.status === "done" && needsNumber ? `${taskItem.actual}${taskItem.unit}` : needsNumber ? `目标 ${taskItem.target}${taskItem.unit}` : "";
       const isEditing = selectedTaskId === taskItem.id;
       return `
         <article class="todo-item ${stateClass}" data-task-id="${taskItem.id}">
-          <button class="todo-circle" data-complete="${taskItem.id}" aria-label="编辑 ${taskItem.title}">${taskItem.status === "done" ? "✓" : lucideIcon(iconMap[taskItem.category])}</button>
+          <button class="todo-check" data-toggle-task="${taskItem.id}" aria-label="${taskItem.status === "done" ? "取消完成" : "编辑"} ${taskItem.title}">${taskItem.status === "done" ? "✓" : ""}</button>
           <div class="todo-main">
             <div class="todo-line">
               <span class="todo-time">${taskItem.time}</span>
@@ -393,22 +470,26 @@ function renderCareList() {
               <span class="pill ${taskItem.required ? "required" : "optional"}">${taskItem.required ? "必做" : "选做"}</span>
             </div>
             <p>${taskItem.detail}</p>
-            <span class="todo-meta">${value}${taskItem.note ? ` · ${taskItem.note}` : ""}</span>
+            <span class="todo-meta">${[value, taskItem.note].filter(Boolean).join(" · ")}</span>
             ${
               isEditing
                 ? `
               <div class="inline-editor">
-                <div class="stepper">
-                  <button type="button" data-step="${taskItem.id}" data-delta="-10">−</button>
-                  <input data-actual="${taskItem.id}" type="number" step="1" value="${taskItem.actual || taskItem.target}" />
-                  <button type="button" data-step="${taskItem.id}" data-delta="10">+</button>
-                  <span>${taskItem.unit}</span>
-                </div>
-                <input class="range-input" data-range="${taskItem.id}" type="range" min="0" max="${Math.max(taskItem.target * 2, 10)}" step="1" value="${taskItem.actual || taskItem.target}" />
+                <label class="time-editor">时间 <input data-time="${taskItem.id}" type="time" value="${taskItem.time}" /></label>
+                ${
+                  needsNumber
+                    ? `<div class="stepper">
+                        <button type="button" data-step="${taskItem.id}" data-delta="${taskItem.unit === "ml" ? -10 : -5}">−</button>
+                        <input data-actual="${taskItem.id}" type="number" step="1" value="${taskItem.actual || taskItem.target}" />
+                        <button type="button" data-step="${taskItem.id}" data-delta="${taskItem.unit === "ml" ? 10 : 5}">+</button>
+                        <span>${taskItem.unit}</span>
+                      </div>
+                      <input class="range-input" data-range="${taskItem.id}" type="range" min="0" max="${Math.max(taskItem.target * 2, 10)}" step="1" value="${taskItem.actual || taskItem.target}" />`
+                    : ""
+                }
                 <input data-note="${taskItem.id}" type="text" value="${taskItem.note || ""}" placeholder="备注特殊情况" />
                 <div class="button-row">
                   <button class="primary small" type="button" data-save-task="${taskItem.id}">保存完成</button>
-                  <button class="ghost small" type="button" data-miss-task="${taskItem.id}">未完成</button>
                   <button class="ghost small" type="button" data-cancel-task="${taskItem.id}">收起</button>
                 </div>
               </div>`
@@ -575,18 +656,19 @@ function renderGrowth() {
 
 function buildTimelineEvents() {
   const taskEvents = state.tasks
-    .filter((taskItem) => taskItem.status !== "todo")
+    .filter((taskItem) => taskItem.status === "done")
     .map((taskItem) => ({
       time: taskItem.completedAt || taskItem.time,
-      title: `${taskItem.status === "done" ? "完成" : "未完成"} · ${taskItem.title}`,
+      title: `完成 · ${taskItem.title}`,
       detail: `${taskItem.actual || taskItem.target}${taskItem.unit}${taskItem.note ? ` · ${taskItem.note}` : ""}`,
-      kind: taskItem.status === "done" ? "done" : "missed"
+      kind: "done"
     }));
   const mediaEvents = state.media.map((item) => ({
     time: item.time,
     title: "照片/视频",
     detail: `${item.note || "已添加媒体记录"}${item.fileName ? ` · ${item.fileName}` : ""}`,
-    kind: "media"
+    kind: "media",
+    thumb: item.thumb || ""
   }));
   return [...taskEvents, ...mediaEvents].sort((a, b) => a.time.localeCompare(b.time));
 }
@@ -595,8 +677,31 @@ function renderTimeline() {
   const events = buildTimelineEvents();
   document.querySelector("#timelineCount").textContent = `${events.length} 条`;
   timeline.innerHTML = events
-    .map((event) => `<div class="timeline-item ${event.kind}"><strong>${event.time} · ${event.title}</strong><span>${event.detail}</span></div>`)
+    .map((event) => `<div class="timeline-item ${event.kind}"><strong>${event.time} · ${event.title}</strong><span>${event.detail}</span>${event.thumb ? `<img src="${event.thumb}" alt="记录缩略图" />` : ""}</div>`)
     .join("");
+}
+
+function renderMediaGrid() {
+  const grid = document.querySelector("#mediaGrid");
+  const count = document.querySelector("#mediaCount");
+  count.textContent = `${state.media.length} 条`;
+  grid.innerHTML = state.media.length
+    ? state.media
+        .slice()
+        .reverse()
+        .map(
+          (item) => `
+            <article class="media-card">
+              ${item.thumb ? `<img src="${item.thumb}" alt="${item.note || "照片记录"}" />` : `<div class="media-placeholder">视频</div>`}
+              <div>
+                <strong>${item.time}</strong>
+                <p>${item.note || item.fileName || "成长片段"}</p>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<article class="media-card empty"><strong>还没有照片视频</strong><p>上传后会在这里和报告时间线里展示。</p></article>`;
 }
 
 function renderHistory() {
@@ -623,7 +728,28 @@ function renderHistory() {
           }
         )
         .join("")
-    : `<article class="history-card"><strong>还没有历史报告</strong><p>点击“生成报告”后，当前报告会保存到这里，之后可以回溯。</p></article>`;
+    : `<article class="history-card"><strong>还没有历史报告</strong><p>到达日报生成时间后，每天会自动保存一份历史日报。</p></article>`;
+}
+
+function reportSummaryText() {
+  return `完成 ${state.tasks.filter((taskItem) => taskItem.status === "done").length} 项，奶量 ${milkTotal()}ml，时间线 ${buildTimelineEvents().length} 条。`;
+}
+
+function ensureDailyReport() {
+  if (!reportIsDue()) return null;
+  const existing = state.reports.find((report) => report.date === TODAY);
+  const report = {
+    id: existing?.id || `report-${TODAY}`,
+    date: TODAY,
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    title: `${state.baby.name} ${TODAY} 日报`,
+    summary: reportSummaryText(),
+    html: buildReportHtml(),
+    timeline: buildTimelineEvents()
+  };
+  state.reports = [report, ...state.reports.filter((item) => item.date !== TODAY)].slice(0, 14);
+  saveState();
+  return report;
 }
 
 function buildReportHtml() {
@@ -646,9 +772,13 @@ function buildReportHtml() {
 }
 
 function renderReport() {
-  document.querySelector("#reportCard").innerHTML = buildReportHtml();
-  document.querySelector("#morningReminder").value = state.reminders.morning;
-  document.querySelector("#eveningReminder").value = state.reminders.evening;
+  const reportTime = state.reminders.reportTime || "20:30";
+  document.querySelector("#reportTimeTitle").textContent = `日报生成时间 · ${reportTime}`;
+  document.querySelector("#eveningReminder").value = reportTime;
+  const report = ensureDailyReport();
+  document.querySelector("#reportCard").innerHTML = report
+    ? `<p class="report-stamp">${report.date} · ${report.createdAt.slice(11, 16)}</p>${report.html}`
+    : `<h3>日报还未生成</h3><p>今天的日报会在 ${reportTime} 后生成。到时间后进入本页即可查看，并且每天只保存一份历史日报。</p>`;
   renderHistory();
 }
 
@@ -673,18 +803,52 @@ function renderAll() {
   renderGrowth();
   renderReport();
   renderTimeline();
+  renderMediaGrid();
 }
 
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => selectScreen(tab.dataset.tab));
 });
 
+let touchStartX = 0;
+let touchStartY = 0;
+document.querySelector(".app-shell").addEventListener("touchstart", (event) => {
+  touchStartX = event.touches[0].clientX;
+  touchStartY = event.touches[0].clientY;
+});
+document.querySelector(".app-shell").addEventListener("touchend", (event) => {
+  const dx = event.changedTouches[0].clientX - touchStartX;
+  const dy = event.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  const tabIds = [...tabs].map((tab) => tab.dataset.tab);
+  const current = tabIds.findIndex((id) => document.querySelector(`#${id}`).classList.contains("active"));
+  const next = dx < 0 ? Math.min(tabIds.length - 1, current + 1) : Math.max(0, current - 1);
+  if (next !== current) selectScreen(tabIds[next]);
+});
+
 document.addEventListener("click", (event) => {
   const jump = event.target.closest("[data-tab-jump]");
   if (jump) selectScreen(jump.dataset.tabJump);
 
-  const complete = event.target.closest("[data-complete]");
-  if (complete) openCompletion(complete.dataset.complete);
+  const toggle = event.target.closest("[data-toggle-task]");
+  if (toggle) {
+    event.stopPropagation();
+    const taskItem = state.tasks.find((item) => item.id === toggle.dataset.toggleTask);
+    if (!taskItem) return;
+    if (taskItem.status === "done") {
+      clearTask(taskItem);
+      selectedTaskId = null;
+      saveState();
+      renderAll();
+      return;
+    }
+    openCompletion(taskItem.id);
+    return;
+  }
+
+  const card = event.target.closest("[data-task-id]");
+  const insideControl = event.target.closest("button, input, select, textarea");
+  if (card && !insideControl) openCompletion(card.dataset.taskId);
 });
 
 document.querySelectorAll(".segment").forEach((segment) => {
@@ -751,7 +915,6 @@ document.addEventListener("input", (event) => {
 document.addEventListener("click", (event) => {
   const step = event.target.closest("[data-step]");
   const save = event.target.closest("[data-save-task]");
-  const miss = event.target.closest("[data-miss-task]");
   const cancel = event.target.closest("[data-cancel-task]");
 
   if (step) {
@@ -762,17 +925,19 @@ document.addEventListener("click", (event) => {
     if (slider) slider.value = next;
   }
 
-  if (save || miss) {
-    const id = (save || miss).dataset.saveTask || (save || miss).dataset.missTask;
+  if (save) {
+    const id = save.dataset.saveTask;
     const taskItem = state.tasks.find((item) => item.id === id);
     if (!taskItem) return;
-    taskItem.actual = Number(document.querySelector(`[data-actual="${id}"]`).value || taskItem.target);
+    const actualInput = document.querySelector(`[data-actual="${id}"]`);
+    const timeInput = document.querySelector(`[data-time="${id}"]`);
+    taskItem.time = timeInput?.value || taskItem.time;
+    taskItem.actual = actualInput ? Number(actualInput.value || taskItem.target) : taskItem.target;
     taskItem.note = document.querySelector(`[data-note="${id}"]`).value.trim();
-    taskItem.status = save ? "done" : "missed";
+    taskItem.status = "done";
     taskItem.completedAt = taskItem.time;
-    if (save) maybeCreateMilkAdjust(taskItem);
+    maybeCreateMilkAdjust(taskItem);
     selectedTaskId = null;
-    showToast(save ? "已完成并进入报告时间线" : "已标记未完成");
     saveState();
     renderAll();
   }
@@ -783,30 +948,36 @@ document.addEventListener("click", (event) => {
   }
 });
 
-document.querySelector("#mediaForm").addEventListener("submit", (event) => {
+document.querySelector("#mediaForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = document.querySelector("#mediaInput").files[0];
   const note = document.querySelector("#mediaNote").value.trim();
   const time = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
   if (!file && !note) return;
-  state.media.push({ id: `media-${Date.now()}`, time, fileName: file ? file.name : "", note });
-  event.target.reset();
-  showToast("照片/视频已加入报告时间线");
-  saveState();
-  renderAll();
+  try {
+    const thumb = file ? await fileToDataUrl(file, 900, 0.72) : "";
+    state.media.push({ id: `media-${Date.now()}`, time, fileName: file ? file.name : "", note, thumb, kind: file?.type.startsWith("video/") ? "video" : "image" });
+    event.target.reset();
+    saveState();
+    renderAll();
+  } catch (error) {
+    showToast("图片处理失败，请换一张再试");
+  }
 });
 
 document.querySelector("#profileAvatar").addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    state.baby.avatarDataUrl = reader.result;
-    saveState();
-    renderSummary();
-    showToast("宝宝头像已更新");
-  };
-  reader.readAsDataURL(file);
+  fileToDataUrl(file, 320, 0.72)
+    .then((dataUrl) => {
+      state.baby.avatarDataUrl = dataUrl;
+      saveState();
+      renderSummary();
+      showToast("宝宝头像已更新");
+    })
+    .catch(() => {
+      showToast("头像处理失败，请换一张再试");
+    });
 });
 
 document.querySelector("#profileForm").addEventListener("submit", (event) => {
@@ -832,7 +1003,7 @@ document.querySelector("#growthForm").addEventListener("submit", (event) => {
   const weight = Number(document.querySelector("#weightInput").value);
   const height = Number(document.querySelector("#heightInput").value);
   if (!weight || !height) return;
-  const date = new Date().toISOString().slice(0, 10);
+  const date = localDateString();
   state.growth = state.growth.filter((item) => item.date !== date);
   state.growth.push({ date, weight, height });
   state.growth = syncBirthGrowth(state);
@@ -857,32 +1028,12 @@ document.querySelector("#dismissAdjust").addEventListener("click", () => {
   renderAll();
 });
 
-document.querySelector("#buildReport").addEventListener("click", () => {
-  renderReport();
-  renderTimeline();
-  const createdAt = new Date().toISOString();
-  const summary = `完成 ${state.tasks.filter((taskItem) => taskItem.status === "done").length} 项，奶量 ${milkTotal()}ml，时间线 ${buildTimelineEvents().length} 条。`;
-  state.reports.unshift({
-    id: `report-${Date.now()}`,
-    date: TODAY,
-    createdAt,
-    title: `${state.baby.name} ${TODAY} 照护报告`,
-    summary,
-    html: buildReportHtml(),
-    timeline: buildTimelineEvents()
-  });
-  state.reports = state.reports.slice(0, 10);
-  saveState();
-  renderHistory();
-  showToast("报告已更新");
-});
-
 document.querySelector("#reminderForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  state.reminders.morning = document.querySelector("#morningReminder").value || state.reminders.morning;
-  state.reminders.evening = document.querySelector("#eveningReminder").value || state.reminders.evening;
+  state.reminders.reportTime = document.querySelector("#eveningReminder").value || state.reminders.reportTime;
+  state.reports = state.reports.filter((report) => report.date !== TODAY);
   saveState();
-  showToast("提醒时间已保存");
+  showToast("日报生成时间已保存");
   renderReport();
 });
 

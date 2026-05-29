@@ -32,43 +32,6 @@
         </button>
       </header>
 
-      <section class="hero-panel">
-        <div class="baby-summary">
-          <div class="avatar" id="babyAvatar" aria-hidden="true">宝</div>
-          <div class="baby-copy">
-            <p class="muted">今日照护对象</p>
-            <h2 id="babyName">小星星</h2>
-            <p id="babyMeta">4月龄 · 混合喂养 · 已健康成长 132 天</p>
-          </div>
-          <button class="ghost small" id="editProfile">修改</button>
-        </div>
-        <div class="weather-strip" id="weatherStrip"></div>
-        <div class="milk-progress">
-          <div class="progress-copy">
-            <span>今日奶量</span>
-            <strong id="milkProgressText">0ml / 850ml</strong>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" id="milkProgressBar"></div>
-          </div>
-        </div>
-        <div class="status-grid">
-          <article>
-            <span>最近喂奶</span>
-            <strong id="recentFeedTime">--:--</strong>
-          </article>
-          <article>
-            <span>睡眠</span>
-            <strong id="sleepProgress">0 分钟</strong>
-          </article>
-          <article>
-            <span>排便</span>
-            <strong id="poopProgress">0 次</strong>
-          </article>
-        </div>
-        <div class="vaccine-strip" id="vaccineStrip"></div>
-      </section>
-
       <nav class="tabbar" aria-label="主要功能">
         <button class="tab active" data-tab="today">今日</button>
         <button class="tab" data-tab="checklist">清单</button>
@@ -78,6 +41,43 @@
       </nav>
 
       <section class="screen active" id="today">
+        <section class="hero-panel">
+          <div class="baby-summary">
+            <div class="avatar" id="babyAvatar" aria-hidden="true">宝</div>
+            <div class="baby-copy">
+              <p class="muted">我的宝宝</p>
+              <h2 id="babyName">小星星</h2>
+              <p id="babyMeta">4月龄 · 混合喂养 · 已健康成长 132 天</p>
+            </div>
+            <button class="ghost small" id="editProfile">修改</button>
+          </div>
+          <div class="weather-strip" id="weatherStrip"></div>
+          <div class="milk-progress">
+            <div class="progress-copy">
+              <span>今日奶量</span>
+              <strong id="milkProgressText">0ml / 850ml</strong>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="milkProgressBar"></div>
+            </div>
+          </div>
+          <div class="status-grid">
+            <article>
+              <span>最近喂奶</span>
+              <strong id="recentFeedTime">--:--</strong>
+            </article>
+            <article>
+              <span>睡眠</span>
+              <strong id="sleepProgress">0 分钟</strong>
+            </article>
+            <article>
+              <span>排便</span>
+              <strong id="poopProgress">0 次</strong>
+            </article>
+          </div>
+          <div class="vaccine-strip" id="vaccineStrip"></div>
+        </section>
+
         <div class="section-title">
           <div>
             <p class="eyebrow">2026-05-29</p>
@@ -114,7 +114,7 @@
           <button class="segment active" data-filter="all">全部</button>
           <button class="segment" data-filter="required">必做</button>
           <button class="segment" data-filter="optional">选做</button>
-          <button class="segment" data-filter="open">未完成</button>
+          <button class="segment" data-filter="open">待办</button>
         </div>
 
         <div class="todo-list" id="careList"></div>
@@ -148,6 +148,14 @@
           </label>
           <button class="primary" type="submit">添加到成长时间线</button>
         </form>
+
+        <section class="media-history-section">
+          <div class="section-title inline">
+            <h3>已记录</h3>
+            <span class="subtle" id="mediaCount">0 条</span>
+          </div>
+          <div class="media-grid" id="mediaGrid"></div>
+        </section>
 
         <div class="source-box">
           <strong>记录定位</strong>
@@ -193,25 +201,20 @@
             <p class="eyebrow">Daily report</p>
             <h2>照护报告</h2>
           </div>
-          <button class="primary small" id="buildReport">生成报告</button>
         </div>
 
-        <article class="report-card" id="reportCard"></article>
-
-        <section class="reminder-settings">
-          <h3>提醒时间</h3>
-          <form class="record-form compact" id="reminderForm">
-            <label>
-              早上提醒
-              <input id="morningReminder" type="time" />
-            </label>
-            <label>
-              晚上提醒
-              <input id="eveningReminder" type="time" />
-            </label>
-            <button class="ghost" type="submit">保存提醒时间</button>
+        <section class="report-time-card">
+          <div>
+            <p class="eyebrow">Report time</p>
+            <h3 id="reportTimeTitle">日报生成时间</h3>
+          </div>
+          <form class="report-time-form" id="reminderForm">
+            <input id="eveningReminder" type="time" />
+            <button class="ghost small" type="submit">保存</button>
           </form>
         </section>
+
+        <article class="report-card" id="reportCard"></article>
 
         <section class="timeline-section">
           <div class="section-title inline">
