@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f2ea" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>小宝同护</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="password-gate" id="passwordGate">
+      <form class="password-card" id="passwordForm">
+        <p class="eyebrow">Private Demo</p>
+        <h1>小宝同护</h1>
+        <p>这是内部体验版本，请输入访问密码。</p>
+        <input id="demoPassword" type="password" autocomplete="current-password" placeholder="访问密码" />
+        <button class="primary" type="submit">进入 Demo</button>
+        <span id="passwordError"></span>
+      </form>
+    </div>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Baby Co-care</p>
+          <h1>小宝同护</h1>
+        </div>
+        <button class="icon-button" id="resetDemo" aria-label="重置示例数据" title="重置示例数据">
+          <span aria-hidden="true">↻</span>
+        </button>
+      </header>
+
+      <section class="hero-panel">
+        <div class="baby-summary">
+          <div class="avatar" id="babyAvatar" aria-hidden="true">宝</div>
+          <div class="baby-copy">
+            <p class="muted">今日照护对象</p>
+            <h2 id="babyName">小星星</h2>
+            <p id="babyMeta">4月龄 · 混合喂养 · 已健康成长 132 天</p>
+          </div>
+          <button class="ghost small" id="editProfile">修改</button>
+        </div>
+        <div class="weather-strip" id="weatherStrip"></div>
+        <div class="milk-progress">
+          <div class="progress-copy">
+            <span>今日奶量</span>
+            <strong id="milkProgressText">0ml / 850ml</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="milkProgressBar"></div>
+          </div>
+        </div>
+        <div class="status-grid">
+          <article>
+            <span>最近喂奶</span>
+            <strong id="recentFeedTime">--:--</strong>
+          </article>
+          <article>
+            <span>睡眠</span>
+            <strong id="sleepProgress">0 分钟</strong>
+          </article>
+          <article>
+            <span>排便</span>
+            <strong id="poopProgress">0 次</strong>
+          </article>
+        </div>
+        <div class="vaccine-strip" id="vaccineStrip"></div>
+      </section>
+
+      <nav class="tabbar" aria-label="主要功能">
+        <button class="tab active" data-tab="today">今日</button>
+        <button class="tab" data-tab="checklist">清单</button>
+        <button class="tab" data-tab="records">记录</button>
+        <button class="tab" data-tab="growth">成长</button>
+        <button class="tab" data-tab="report">报告</button>
+      </nav>
+
+      <section class="screen active" id="today">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">2026-05-29</p>
+            <h2>今日照护简报</h2>
+          </div>
+          <button class="primary small" id="generatePlan">刷新计划</button>
+        </div>
+
+        <div class="notice">
+          <strong>今日阶段</strong>
+          <p id="stageText">宝宝正在练习更稳定地抬头、翻身预备、主动抓握和咿呀互动。今天重点观察奶量、尿布、睡眠节律和清醒陪玩质量。</p>
+        </div>
+        <div class="development-grid" id="developmentGrid"></div>
+
+        <section class="next-list-section">
+          <div class="section-title inline">
+            <h3>接下来要做</h3>
+            <button class="ghost small" data-tab-jump="checklist">查看全部</button>
+          </div>
+          <div class="next-list" id="nextTasks"></div>
+        </section>
+      </section>
+
+      <section class="screen" id="checklist">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">To-do</p>
+            <h2>今日照护清单</h2>
+          </div>
+          <button class="primary small" id="addDemoRecord">触发示例调整</button>
+        </div>
+
+        <div class="segmented">
+          <button class="segment active" data-filter="all">全部</button>
+          <button class="segment" data-filter="required">必做</button>
+          <button class="segment" data-filter="optional">选做</button>
+          <button class="segment" data-filter="open">未完成</button>
+        </div>
+
+        <div class="todo-list" id="careList"></div>
+
+        <div class="adjust-card hidden" id="adjustCard">
+          <strong>需要你确认的调整</strong>
+          <p id="adjustText"></p>
+          <div class="button-row">
+            <button class="primary" id="acceptAdjust">确认调整</button>
+            <button class="ghost" id="dismissAdjust">暂不调整</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="records">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Memories</p>
+            <h2>照片视频记录</h2>
+          </div>
+        </div>
+
+        <form class="media-form" id="mediaForm">
+          <label>
+            照片/视频
+            <input id="mediaInput" type="file" accept="image/*,video/*" />
+          </label>
+          <label>
+            说明
+            <input id="mediaNote" type="text" placeholder="例如 今天会翻身预备动作了" />
+          </label>
+          <button class="primary" type="submit">添加到成长时间线</button>
+        </form>
+
+        <div class="source-box">
+          <strong>记录定位</strong>
+          <p>这里主要记录照片、视频和重要片段；喝奶、睡眠、排便、陪玩等照护动作在“清单”里完成并自动进入报告时间线。</p>
+        </div>
+      </section>
+
+      <section class="screen" id="growth">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Growth</p>
+            <h2>成长与发育</h2>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <canvas id="growthChart" width="340" height="180" aria-label="宝宝体重和身高趋势图"></canvas>
+        </div>
+        <div class="growth-stats" id="growthStats"></div>
+        <article class="report-card" id="growthAssessment"></article>
+
+        <form class="record-form compact" id="growthForm">
+          <label>
+            体重 kg
+            <input id="weightInput" inputmode="decimal" type="number" step="0.01" placeholder="例如 6.80" />
+          </label>
+          <label>
+            身高 cm
+            <input id="heightInput" inputmode="decimal" type="number" step="0.1" placeholder="例如 64.0" />
+          </label>
+          <button class="primary" type="submit">添加测量</button>
+        </form>
+
+        <div class="source-box">
+          <strong>参考原则</strong>
+          <p>正式版本应接入 WHO 生长标准百分位计算。当前 Demo 用常见范围做提示，不作为诊断；若曲线明显下滑、喂养困难、尿量减少或精神差，应咨询医生。</p>
+        </div>
+      </section>
+
+      <section class="screen" id="report">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Daily report</p>
+            <h2>照护报告</h2>
+          </div>
+          <button class="primary small" id="buildReport">生成报告</button>
+        </div>
+
+        <article class="report-card" id="reportCard"></article>
+
+        <section class="reminder-settings">
+          <h3>提醒时间</h3>
+          <form class="record-form compact" id="reminderForm">
+            <label>
+              早上提醒
+              <input id="morningReminder" type="time" />
+            </label>
+            <label>
+              晚上提醒
+              <input id="eveningReminder" type="time" />
+            </label>
+            <button class="ghost" type="submit">保存提醒时间</button>
+          </form>
+        </section>
+
+        <section class="timeline-section">
+          <div class="section-title inline">
+            <h3>今日时间线</h3>
+            <span class="subtle" id="timelineCount">0 条</span>
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </section>
+
+        <section class="history-section">
+          <div class="section-title inline">
+            <h3>历史报告</h3>
+            <span class="subtle" id="historyCount">0 份</span>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </section>
+
+        <div class="source-box">
+          <strong>内置权威资料方向</strong>
+          <p>AAP/HealthyChildren 配方奶量建议、WHO 生长标准、CDC/AAP 发育里程碑、中国国家免疫规划、中国居民膳食指南、0-6岁儿童健康管理服务规范。蒙特梭利家庭方案用于环境与陪玩设计，不替代医学建议。</p>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="modal-backdrop hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <section class="profile-modal">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Profile</p>
+            <h2 id="profileTitle">宝宝档案</h2>
+          </div>
+          <button class="icon-button flat" id="closeProfile" aria-label="关闭">×</button>
+        </div>
+
+        <form class="record-form compact profile-form" id="profileForm">
+          <label>
+            宝宝昵称
+            <input id="profileName" type="text" />
+          </label>
+          <label>
+            出生日期
+            <input id="profileBirthDate" type="date" />
+          </label>
+          <label>
+            当前省份
+            <select id="profileProvince"></select>
+          </label>
+          <label>
+            当前城市
+            <select id="profileCity"></select>
+          </label>
+          <label>
+            喂养方式
+            <select id="profileFeeding">
+              <option>母乳喂养</option>
+              <option>奶粉喂养</option>
+              <option>混合喂养</option>
+              <option>已添加辅食</option>
+            </select>
+          </label>
+          <label>
+            宝宝性别
+            <select id="profileGender">
+              <option value="female">女宝</option>
+              <option value="male">男宝</option>
+              <option value="unknown">暂不确定/不填写</option>
+            </select>
+          </label>
+          <label>
+            出生体重 g
+            <input id="profileBirthWeight" inputmode="numeric" type="number" min="0" step="1" />
+          </label>
+          <label>
+            宝宝头像
+            <input id="profileAvatar" type="file" accept="image/*" />
+          </label>
+          <p class="form-note" id="milkBasis">奶量会按最近一次体重自动估算；母乳喂养优先按需喂养和观察尿量。</p>
+          <button class="primary" type="submit">保存档案</button>
+        </form>
+      </section>
+    </div>
+
+    <div class="toast hidden" id="toast" role="status"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "小宝同护",
+  "short_name": "小宝同护",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f2ea",
+  "theme_color": "#f7f2ea",
+  "description": "宝宝多人照护清单、记录和日报 MVP"
+}
